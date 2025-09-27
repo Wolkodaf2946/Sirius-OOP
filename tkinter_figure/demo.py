@@ -1,16 +1,21 @@
-import tkinter_figure as tk
+import tkinter as tk
 from tkinter_figure import figure
 
 root = tk.Tk()
 canvas = tk.Canvas(root, width=1080, height=1440, bg="white")
 canvas.pack()
 
+point = figure.Point(540, 1300, width=30)
 
-
-line = figure.Line(140, 100, 920, 100)
+line = figure.Line(140, 100, 920, 100, width=10)
 line.draw(canvas)
 
-triangle = figure.Triangle(1040, 1400, 1000, 1000, 680, 680)
+triangle = figure.Triangle(540, 500, 340, 900, 740, 900, width=10)
 triangle.draw(canvas)
+
+slices = [point, line, triangle]
+
+for i in slices:
+    i.draw(canvas)
 
 root.mainloop()

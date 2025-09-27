@@ -31,18 +31,20 @@ class Line(Shape):
         )
 
 class Triangle(Shape):
-    def __init__(self, x1, y1, x2, y2, x3, y3, color="green", width=2):
+    def __init__(self, x1, y1, x2, y2, x3, y3, color="green", width=2, fill=""):
         super().__init__(x1, y1, x2, y2, x3, y3, color=color, width=width)
         self.x1, self.y1 = x1, y1
         self.x2, self.y2 = x2, y2
         self.x3, self.y3 = x3, y3
+        self.fill = fill
 
     def draw(self, canvas):
         points = [self.x1, self.y1, self.x2, self.y2, self.x3, self.y3]
         canvas.create_polygon(
             points,
             outline=self.color,
-            width=self.width
+            width=self.width,
+            fill=self.fill
         )
 
 
