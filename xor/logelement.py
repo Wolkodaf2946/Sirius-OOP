@@ -3,7 +3,6 @@ class TLogElement:
         self.__in1 = False
         self.__in2 = False
         self._res = False
-
         self.__nextEl = None
         self.__nextIn = 0
 
@@ -64,23 +63,23 @@ class TOr (TLog2In):
 class TXor (TLog2In):
     def __init__(self):
         TLog2In.__init__(self)
+        self.__not1 = TNot()
+        self.__not2 = TNot()
+        self.__or1 = TOr()
+        self.__or2 = TOr()
+        self.__and1 = TAnd()
+
     def calc(self):
-        not1 = TNot()
-        not2 = TNot()
-        or1 = TOr()
-        or2 = TOr()
-        and1 = TAnd()
+        self.__or1.__in1 = self.__in1
+        self.__or1.__in2 = self.__in2
 
-        or1.In1 = self.In1
-        or1.In2 = self.In2
+        self.__not1.__in1 = self.__in1
+        self.__not2.__in1 = self.__in2
 
-        not1.In1 = self.In1
-        not2.In1 = self.In2
+        self.__or2.__in1 = self.__not1.Res
+        self.__or2.__in2 = self.__not2.Res
 
-        or2.In1 = not1.Res
-        or2.In2 = not2.Res
+        self.__and1.__in1 = self.__or1.Res
+        self.__and1.__in2 = self.__or2.Res
 
-        and1.In1 = or1.Res
-        and1.In2 = or2.Res
-
-        self._res = and1.Res
+        self._res = self.__and1.Res

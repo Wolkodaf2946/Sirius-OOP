@@ -59,3 +59,4 @@ class TruthTable:
         count_0 = len(self.filter_rows(0))
         count_1 = len(self.filter_rows(1))
         return 0 if count_0 <= count_1 else 1
+
