@@ -6,4 +6,3 @@ s = s.split("B")
 for i in s:
 	if i == 'B':
 		k+=1
-	if
