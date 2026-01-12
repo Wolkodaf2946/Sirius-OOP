@@ -9,8 +9,7 @@ from src.logic.tools import CreationTool, SelectionTool, Tool
 from src.logic.commands import DeleteCommand
 
 class EditorCanvas(QGraphicsView):
-    # Определяем сигнал, который будет излучаться при смене инструмента
-    tool_changed = Signal(str) # Сигнал будет передавать строку (имя инструмента)
+    tool_changed = Signal(str)
     def __init__(self):
         super().__init__()
         
@@ -31,35 +30,28 @@ class EditorCanvas(QGraphicsView):
             "rect": CreationTool(self, "rect", self.undo_stack),
             "ellipse": CreationTool(self, "ellipse", self.undo_stack),
         }
-        self.active_tool: Tool = self.tools["line"] # Активный инструмент по умолчанию
+        self.active_tool: Tool = self.tools["line"]
         
-        # 3. Настройка отображения (View)
-        # Включаем сглаживание (Antialiasing), чтобы линии не были "лесенкой"
         self.setRenderHint(self.renderHints() | QPainter.Antialiasing)
         self.setAlignment(Qt.AlignCenter)
-        self.setMouseTracking(True) # Отслеживаем движение мыши всегда (для корректной работы drag)
+        self.setMouseTracking(True)
         
-        self._is_panning = False # флаг, отвечающий за нажатие средней кнопки мыши
-        self._last_mouse_pos = QPoint() # объект точки с координатами X и Y (по умолчанию 0,0)
+        self._is_panning = False
+        self._last_mouse_pos = QPoint()
         self.set_tool(self.current_tool)
 
     def set_tool(self, tool_name: str):
-        # 1. Завершаем работу предыдущего инструмента, если он был CreationTool
         if self.active_tool and isinstance(self.active_tool, CreationTool):
-            # Если пользователь переключил инструмент во время рисования,
-            # нужно отменить текущее рисование
             if self.active_tool.current_shape:
                 self.scene.removeItem(self.active_tool.current_shape)
                 self.active_tool.current_shape = None
             self.active_tool.start_pos = None
 
         self.current_tool = tool_name
-        # Если tool_name не найден, по умолчанию используем "select"
         self.active_tool = self.tools.get(tool_name, self.tools["select"])
         
         print(f"Canvas: active tool switched to {tool_name}")
 
-        # 4. Логика смены курсора и флагов ItemIsMovable
         if tool_name == "select":
             self.setCursor(Qt.CursorShape.ArrowCursor) 
             for item in self.scene.items():
@@ -87,41 +79,28 @@ class EditorCanvas(QGraphicsView):
 
         if event.button() == Qt.LeftButton:
             item_at_pos = self.itemAt(event.pos())
-            # Если активный инструмент - это инструмент создания,
-            # и мы кликнули на существующий элемент,
-            # мы хотим, чтобы этот элемент можно было выделить/переместить.
-            # Поэтому передаем событие дальше в базовый класс (QGraphicsView).
             if isinstance(self.active_tool, CreationTool) and item_at_pos:
-                # Если кликнули на элемент, переключаемся на инструмент выбора
-                # и передаем ему событие.
-                # Можно автоматически переключиться на SelectionTool
                 self.set_tool("select") 
                 self.active_tool.mouse_press(event)
-                # Или просто позволить QGraphicsView обрабатывать выделение/перемещение
                 super().mousePressEvent(event)
                 return 
-            # Если кликнули по пустому месту ИЛИ активен SelectionTool,
-            # делегируем событие активному инструменту
             self.active_tool.mouse_press(event)
             return
-        super().mousePressEvent(event) # Для других кнопок мыши
+        super().mousePressEvent(event)
 
 
     def mouseReleaseEvent(self, event: QMouseEvent):
         if event.button() == Qt.MiddleButton:
             self._is_panning = False
             if self.current_tool == "select":
-                self.setCursor(Qt.CursorShape.ArrowCursor) # Стрелка для выбора
-            else: # Для всех инструментов рисования (line, rect, ellipse)
-                self.setCursor(Qt.CursorShape.CrossCursor) # Крестик для рисования
+                self.setCursor(Qt.CursorShape.ArrowCursor)
+                self.setCursor(Qt.CursorShape.CrossCursor)
             event.accept()
             return
 
-        # Делегируем активному инструменту
         self.active_tool.mouse_release(event)
-        super().mouseReleaseEvent(event) # Вызываем базовый для сброса состояния QGraphicsView
+        super().mouseReleaseEvent(event)
 
-    # Метод, который вызывает слайдер
     def set_pen_size(self, size):
         self.current_size = size
         print(f"Canvas: толщина изменена на {size}")
@@ -130,28 +109,22 @@ class EditorCanvas(QGraphicsView):
     #------ Средняя кнопка мыши --------
 
     def _start_panning(self, event):
-        # Если нажата средняя кнопка мыши
         self._is_panning = True
-        self._last_mouse_pos = event.pos() # Запоминаем, где нажали
-        self.setCursor(Qt.ClosedHandCursor) # Меняем курсор на "руку"
-        event.accept() # Говорим системе, что мы обработали событие
+        self._last_mouse_pos = event.pos()
+        self.setCursor(Qt.ClosedHandCursor)
+        event.accept()
 
 
     def mouseMoveEvent(self, event: QMouseEvent):
         if self._is_panning:
-            # Вычисляем разницу между текущей и предыдущей позицией мыши
             delta = event.pos() - self._last_mouse_pos
             self._last_mouse_pos = event.pos()
             
-            # Двигаем скроллбары на эту разницу
-            # (вычитаем delta, чтобы движение было естественным: тянем вправо -> холст едет вправо)
             self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - delta.x())
             self.verticalScrollBar().setValue(self.verticalScrollBar().value() - delta.y())
             event.accept()
             return
 
-
-        # Если не панорамирование, делегируем активному инструменту
         self.active_tool.mouse_move(event)
         super().mouseMoveEvent(event)
 

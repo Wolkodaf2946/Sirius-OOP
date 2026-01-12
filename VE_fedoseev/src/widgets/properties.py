@@ -11,7 +11,6 @@ class PropertiesPanel(QWidget):
 
         self._init_ui()
 
-        # Подключаемся к сигналу изменения выделения сцены
         self.scene.selectionChanged.connect(self.on_selection_changed)
 
 
@@ -63,7 +62,6 @@ class PropertiesPanel(QWidget):
         layout.addStretch()
 
     def _is_scene_valid(self):
-        #Проверяет, что сцена существует и валидна
         return self.scene is not None and isValid(self.scene)
 
     def on_selection_changed(self):

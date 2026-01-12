@@ -12,7 +12,7 @@ class VectorEditorWindow(QMainWindow):
         super().__init__()
         
         self.setWindowTitle("Vector Editor")
-        self.resize(800, 600) # Начальный размер
+        self.resize(800, 600)
 
         self.current_tool = "line"
         self.current_color = "red"
@@ -36,26 +36,21 @@ class VectorEditorWindow(QMainWindow):
         save_action.setStatusTip("Opening Project")
         open_action.triggered.connect(self.on_open_clicked)
 
-        # Создаем Action
-        # Action привязывается к меню или тулбару.
         exit_action = QAction("Exit", self)
         exit_action.setShortcut("Ctrl+Q")
         exit_action.setStatusTip("Close the application")
-        # connect - связываем сигнал с методом close()
         exit_action.triggered.connect(self.close) 
         
-        # Добавляем Action в меню
         file_menu.addAction(open_action)
         file_menu.addAction(save_action)
         file_menu.addAction(exit_action)
         
         # Тулбар
         toolbar = self.addToolBar("Main Toolbar")
-        toolbar.addAction(exit_action) # Тот же самый Action
+        toolbar.addAction(exit_action)
 
         #<+====================+>
 
-        # Связываем сигналы
         self.btn_line.clicked.connect(lambda: self.on_change_tool("line"))
         self.btn_rect.clicked.connect(lambda: self.on_change_tool("rect"))
         self.btn_ellipse.clicked.connect(lambda: self.on_change_tool("ellipse"))
@@ -91,9 +86,7 @@ class VectorEditorWindow(QMainWindow):
         edit_menu.addAction(redo_action)
         edit_menu.addAction(delete_action)
 
-    # Слот (Метод-обработчик)
     def on_change_tool(self, tool_name: str):
-        # Только обновляем статусбар и говорим холсту изменить инструмент
         self.current_tool_str = tool_name
         self.statusBar().showMessage(f"Выбран инструмент: {tool_name}")
         
@@ -101,7 +94,6 @@ class VectorEditorWindow(QMainWindow):
             self.canvas.set_tool(tool_name)
 
     def _update_tool_buttons_ui(self, tool_name: str):
-        # Сбрасываем все кнопки, затем устанавливаем нужную
         self.btn_line.setChecked(False)
         self.btn_rect.setChecked(False)
         self.btn_ellipse.setChecked(False)
@@ -120,32 +112,25 @@ class VectorEditorWindow(QMainWindow):
 
     def on_color_select(self):
         selected_color_qcolor = QColorDialog.getColor(
-            QColor(self.current_color), # Начальный цвет
-            self,                      # Родительское окно
-            "Choose a color for the shape" # Заголовок диалога
+            QColor(self.current_color), self,
+            "Choose a color for the shape"
         )
         
-        # Проверяем, что пользователь не отменил выбор
         if selected_color_qcolor.isValid():
-            self.current_color = selected_color_qcolor.name() # Получаем цвет в формате #RRGGBB
+            self.current_color = selected_color_qcolor.name()
             
-            # Обновляем внешний вид кнопки
             self.btn_color_picker.setStyleSheet(f"selected color: {self.current_color};")
             
-            # Передаем новый цвет на холст
             if self.canvas:
                 self.canvas.set_current_color(self.current_color)
 
     def _setup_layout(self):
-        # 1. Создаем главный контейнер
         container = QWidget()
         self.setCentralWidget(container)
         
-        # 2. Основной лейаут (Горизонтальный: Слева панель, Справа холст)
         main_layout = QHBoxLayout(container)
-        main_layout.setContentsMargins(0, 0, 0, 0) # Убираем отступы от краев окна
+        main_layout.setContentsMargins(0, 0, 0, 0)
 
-        # Создаем кнопки с сохранением ссылки, чтобы потом к ним обращаться
         self.btn_line = QPushButton("Line")
         self.btn_rect = QPushButton("Rect")
         self.btn_ellipse = QPushButton("Ellipse")
@@ -159,28 +144,23 @@ class VectorEditorWindow(QMainWindow):
         self.btn_select.setCheckable(True)
         self.btn_line.setChecked(True)
         
-        # --- Левая панель (Палитра инструментов) ---
         tools_panel = QFrame()
-        tools_panel.setFixedWidth(120) # Фиксируем ширину
-        tools_panel.setStyleSheet("background-color: #f0f0f0;") # Временный цвет для наглядности
+        tools_panel.setFixedWidth(120)
+        tools_panel.setStyleSheet("background-color: #f0f0f0;") 
         
-        # Внутри панели кнопки идут вертикально
         tools_layout = QVBoxLayout(tools_panel)
         tools_layout.addWidget(self.btn_line)
         tools_layout.addWidget(self.btn_rect)
         tools_layout.addWidget(self.btn_ellipse)
-        tools_layout.addStretch() #не центрируем кнопки
+        tools_layout.addStretch()
         
         self.canvas = EditorCanvas()
 
-        self.canvas.set_tool(self.current_tool) # Устанавливаем начальный инструмент на холсте
+        self.canvas.set_tool(self.current_tool)
         self.canvas.set_current_color(self.current_color)
-        self.canvas.tool_changed.connect(self._update_tool_buttons_ui) # Подключение сигнала
+        self.canvas.tool_changed.connect(self._update_tool_buttons_ui)
 
-        # Устанавливаем начальное состояние кнопок в UI, основываясь на current_tool_str
         self._update_tool_buttons_ui(self.current_tool)
-
-        # --- Настройка инструментов ---
 
         settings_panel = QFrame()
         settings_panel.setFixedWidth(240)
@@ -200,12 +180,10 @@ class VectorEditorWindow(QMainWindow):
         self.lbl_size = QLabel("Size: 2px")
         
         # 3. Слайдер
-        self.slider_size = QSlider(Qt.Horizontal) # Горизонтальный
-        self.slider_size.setRange(1, 100)          # От 1 до 20 пикселей
-        self.slider_size.setValue(2)              # Значение по умолчанию
+        self.slider_size = QSlider(Qt.Horizontal)
+        self.slider_size.setRange(1, 100)
+        self.slider_size.setValue(2)
         
-        # 4. Логика
-        # Когда двигаем ползунок -> обновляем текст и передаем значение в Canvas
         self.slider_size.valueChanged.connect(self.on_size_change)
         #settings_layout.addStretch()
 
@@ -217,10 +195,8 @@ class VectorEditorWindow(QMainWindow):
         main_layout.addWidget(settings_panel)
 
     def on_size_change(self, value):
-        # 1. Обновляем текст (например "Толщина: 5px")
         self.lbl_size.setText(f"Size: {value}px")
         
-        # 2. Передаем значение в холст
         if hasattr(self, 'canvas'):
             self.canvas.set_pen_size(value)
 

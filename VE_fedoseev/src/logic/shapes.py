@@ -3,11 +3,9 @@ from PySide6.QtWidgets import QGraphicsPathItem
 from PySide6.QtGui import QPen, QColor, QPainterPath
 from PySide6.QtCore import QPointF
 
-# QGraphicsPathItem - дает графику
-# ABC - делает класс абстрактным
 class Shape(QGraphicsPathItem):
     def __init__(self, color: str = "black", stroke_width: int = 2):
-        super().__init__()  # Обязательно инициализируем QGraphicsPathItem
+        super().__init__()
         
         self.color = color
         self.stroke_width = stroke_width
@@ -16,21 +14,14 @@ class Shape(QGraphicsPathItem):
         self._setup_flags()
 
     def _setup_pen(self):
-        # Настройка внешнего вида (QPen - это "карандаш" для обводки)
         pen = QPen(QColor(self.color))
         pen.setWidth(self.stroke_width)
         self.setPen(pen)
 
     def _setup_flags(self):
-        # Разрешаем выделение и перемещение
 
-        # --- МАГИЯ QT ---
-        # Включаем встроенные возможности интерактивности.
-        # ItemIsSelectable: Фигура может быть выделена (вокруг появится рамка, если настроить)
-        # ItemIsMovable: Фигуру можно таскать мышкой (Qt сам обработает drag-n-drop!)
         self.setFlag(QGraphicsPathItem.GraphicsItemFlag.ItemIsSelectable)
         self.setFlag(QGraphicsPathItem.GraphicsItemFlag.ItemIsMovable)
-        # Разрешаем слать сигналы при изменении геометрии (пригодится позже)
         self.setFlag(QGraphicsPathItem.GraphicsItemFlag.ItemSendsGeometryChanges)
         
     def set_stroke_width(self, width: int):
@@ -107,9 +98,7 @@ class Line(Shape):
 
     def _create_geometry(self):
         path = QPainterPath()
-        # Инструкция: встань в начало
         path.moveTo(self.x1, self.y1)
-        # Инструкция: проведи черту до конца
         path.lineTo(self.x2, self.y2)
         
         self.setPath(path)
@@ -148,7 +137,6 @@ class Ellipse(Shape):
 
     def _create_geometry(self):
         path = QPainterPath()
-        # Отличие только в методе: addEllipse вместо addRect
         path.addEllipse(self.x, self.y, self.w, self.h)
         self.setPath(path)
 
